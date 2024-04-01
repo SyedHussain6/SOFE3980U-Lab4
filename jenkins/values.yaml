@@ -1,32 +1,35 @@
-controller:
-  installPlugins:
-    - kubernetes:latest
-    - workflow-job:latest
-    - workflow-aggregator:latest
-    - credentials-binding:latest
-    - git:latest
-    - google-oauth-plugin:latest
-    - google-source-plugin:latest
-    - google-kubernetes-engine:latest
-    - google-storage-plugin:latest
-  resources:
-    requests:
-      cpu: "50m"
-      memory: "1024Mi"
-    limits:
-      cpu: "1"
-      memory: "3500Mi"
-  javaOpts: "-Xms3500m -Xmx3500m"
-  serviceType: LoadBalancer
-agent:
-  resources:
-    requests:
-      cpu: "500m"
-      memory: "256Mi"
-    limits:
-      cpu: "1"
-      memory: "512Mi"
-persistence:
-  size: 100Gi
-serviceAccount:
-  name: cd-jenkins
+pipeline {
+    agent any
+    tools {
+        maven 'maven' 
+    }
+    stages {
+        stage ('Init') {
+            steps {
+                sh 'echo "Start of Job"'
+                sh 'ls -la'
+            }
+        }
+        stage ('Test') {
+            steps {
+                sh 'mvn clean test -f ./BinaryCalculatorWebapp/pom.xml'
+            }
+        }
+        stage ('Build') {
+            steps {
+                sh 'mvn package -DskipTests -f ./BinaryCalculatorWebapp/pom.xml'
+            }
+        }
+        stage ('Deploy to GKE') {
+            steps {
+                // Authenticate with GKE using configured credentials
+                withCredentials([googleServiceAccount(credentialsId: '89769313611', project: 'l4sqairaj')]) {
+                    sh 'gcloud container clusters get-credentials your-cluster-name project l4sqairaj'
+                }
+                
+                // Deploy your application to GKE
+                sh 'kubectl apply values.yaml'
+            }
+        }
+    }
+}
