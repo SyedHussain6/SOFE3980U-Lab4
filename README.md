@@ -1,3 +1,7 @@
+# ADDING A CHANGE FOR THE PIPELINE
+# HERE IT IS ---------------------
+
+
 # Milestone 4: Continuous Integration and Continuous Delivery (Jenkins) 
 ## Objective(s)   
 1. Git Familiar with Jenkins.
